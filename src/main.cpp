@@ -32,7 +32,7 @@ void reportError(cl_int err, const std::string &filename, int line)
 std::map<std::string, std::map<int, std::string>> stringValues {
     {"type", {{1, "DEFAULT"}, {2, "CPU"}, {4, "GPU"}, {8, "ACCELERATOR"}, {0xFFFFFFFF, "ALL"}}},
     {"image support", {{0, "False"}, {1, "True"}}},
-    {"memory", {{0, "megabytes"}}}};
+    {"memory", {{1, "megabytes"}}}};
 
 template <typename T>
 void printDeviceInfo(std::string propertyString, cl_device_info deviceInfo, cl_device_id deviceID, int convert=0)
@@ -53,7 +53,7 @@ void printDeviceInfo(std::string propertyString, cl_device_info deviceInfo, cl_d
     else if (convert == 2)
         value = to_string(deviceProperty[0]);
     else if (convert == 3)
-         value = to_string(deviceProperty[0] >> 20) + " " + stringValues[propertyString][0];
+         value = to_string(deviceProperty[0] >> 20) + " " + stringValues[propertyString][1];
 
     std::cout << "        Device " + propertyString + ": " + value << std::endl;
 }
@@ -108,7 +108,7 @@ int main()
         std::cout << "    Platform name: " << platformName.data() << std::endl;
 
         // TODO 1.3
-        // Запросите и напечатайте так же в консоль вендора данной платформы
+        // Запросите и напечатайте так же в консоль вендора данной платформы 
         size_t vendorNameSize;
         OCL_SAFE_CALL(clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 0, nullptr, &vendorNameSize));
         
