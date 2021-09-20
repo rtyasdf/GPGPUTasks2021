@@ -81,7 +81,7 @@ int main()
 
     // Тип основного устройства и устройств, которые будем искать
     cl_device_type main_device_type = CL_DEVICE_TYPE_DEFAULT;
-    cl_device_type common_devtype = CL_DEVICE_TYPE_GPU || CL_DEVICE_TYPE_CPU;
+    cl_device_type common_devtype = CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU;
 
     // Проходим по всем платформам
     for(int i=0; i<num_platforms; i++){
@@ -96,8 +96,10 @@ int main()
     switch(main_device_type){
         case CL_DEVICE_TYPE_GPU:
             std::cout << "GPU device will be used" << std::endl;
+            break;
         case CL_DEVICE_TYPE_CPU:
             std::cout << "CPU device will be used" << std::endl;
+            break;
         default:
             throw std::runtime_error("Find no CPU or GPU!");
     }
