@@ -207,7 +207,7 @@ int main()
     
     unsigned int i = 0;
     for(; i<3; i++)
-        OCL_SAFE_CALL(clSetKernelArg(ker, i, n * sizeof(float), mem_pointers[i]));
+        OCL_SAFE_CALL(clSetKernelArg(ker, i, sizeof(cl_mem), mem_pointers[i]));
     
     OCL_SAFE_CALL(clSetKernelArg(ker, i, sizeof(unsigned int), &n));
     
