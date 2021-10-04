@@ -74,7 +74,7 @@ int main(int argc, char **argv)
         ocl::Kernel sum(sum_kernel, sum_kernel_length, "sum");
         sum.compile();
 
-        unsigned int workGroupSize = 128;
+        unsigned int workGroupSize = 256;
         unsigned int global_work_size = 1; // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
 
         std::vector<unsigned int> res(workGroupSize, 0);  // сумма для каждого потока
@@ -88,11 +88,36 @@ int main(int argc, char **argv)
         res_gpu.resizeN(workGroupSize);
         
         as_gpu.writeN(as.data(), as.size());
-        res_gpu.writeN(res.data(), workGroupSize);
 
-        // исполняем kernel
-        sum.exec(gpu::WorkSize(workGroupSize, global_work_size),
-                 as_gpu, res_gpu, as.size() / workGroupSize);
+        timer t;
+        for (int iter = 0; iter < benchmarkingIters; ++iter) {
+            
+            // очищаем res_gpu
+            res_gpu.writeN(res.data(), workGroupSize);
+            
+            unsigned int size = (unsigned int) as.size();
+            // исполняем kernel
+            sum.exec(gpu::WorkSize(workGroupSize, global_work_size),
+                     as_gpu, res_gpu, size / workGroupSize);
+            t.nextLap();
+        }
+        
+        // изменяем в зависимости от типа устройства вывод
+        cl_device_type deviceType;
+        clGetDeviceInfo(device.device_id_opencl, CL_DEVICE_TYPE, sizeof(cl_device_type), &deviceType, nullptr);
+        std::string deviceString;
+        switch(deviceType){
+            case 2:
+                deviceString = "CPU";
+                break;
+            case 4:
+                deviceString = "GPU";
+                break;
+            default:
+                return 1;
+        }
+        std::cout << deviceString + ":     " << t.lapAvg() << "+-" << t.lapStd() << " s" << std::endl;
+        std::cout << deviceString + ":     " << (n/1000.0/1000.0) / t.lapAvg() << " millions/s" << std::endl; 
 
         // считываем в память host'а
         res_gpu.readN(res.data(), workGroupSize);

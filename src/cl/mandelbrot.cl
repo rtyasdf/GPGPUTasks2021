@@ -20,8 +20,8 @@ __kernel void mandelbrot(__global float* results,
     const unsigned int i = index / width;
     const unsigned int j = index % width;
 
-    float x0 = fromX + (i + 0.5f) * sizeX / width;  // где i -- текущая width
-    float y0 = fromY + (j + 0.5f) * sizeY / height; // где j -- текущий height
+    float x0 = fromX + (i + 0.5f) * sizeX / width;
+    float y0 = fromY + (j + 0.5f) * sizeY / height;
 
     float x = x0;
     float y = y0;

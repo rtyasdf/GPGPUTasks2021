@@ -53,6 +53,8 @@ void renderInWindow(float centralX, float centralY, unsigned int iterationsLimit
 
 void printInfo(images::Image<float> results, size_t flopsInLoop, size_t width, size_t height, unsigned int iterationsLimit, timer T, std::string device);
 
+std::string getDeviceType(cl_device_id deviceID);
+
 int main(int argc, char **argv)
 {
     gpu::Device device = gpu::chooseGPUDevice(argc, argv);
@@ -134,7 +136,10 @@ int main(int argc, char **argv)
             t.nextLap();
         }
         gpu_res.readN(gpu_results.ptr(), width * height);
-        printInfo(gpu_results, 10, width, height, iterationsLimit, t, "GPU");
+        
+        // изменяем в зависимости от типа устройства вывод
+        std::string deviceString = getDeviceType(device.device_id_opencl);
+        printInfo(gpu_results, 10, width, height, iterationsLimit, t, deviceString);
     }
 
     {
@@ -295,4 +300,18 @@ void printInfo(images::Image<float> results, size_t flopsInLoop, size_t width, s
             }
         }
         std::cout << "    Real iterations fraction: " << 100.0 * realIterationsFraction / (width * height) << "%" << std::endl;
+}
+
+std::string getDeviceType(cl_device_id deviceID)
+{
+    cl_device_type deviceType;
+    clGetDeviceInfo(deviceID, CL_DEVICE_TYPE, sizeof(cl_device_type), &deviceType, nullptr);
+    switch(deviceType){
+        case 2:
+           return "CPU";
+        case 4:
+           return "GPU";
+        default:
+           return "Some unknown device";
+    }
 }
