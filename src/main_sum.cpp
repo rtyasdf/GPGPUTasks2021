@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     int benchmarkingIters = 10;
 
     unsigned int reference_sum = 0;
-    unsigned int n = 100 * 1000 * 1000; // 100 * 1000 * 1000;
+    unsigned int n = 100 * 1000 * 1000;
     std::vector<unsigned int> as(n, 0);
     FastRandom r(42);
     for (int i = 0; i < n; ++i) {
@@ -75,13 +75,14 @@ int main(int argc, char **argv)
         sum.compile();
 
         unsigned int workGroupSize = 256;
-        unsigned int global_work_size = as.size(); // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
+        unsigned int k = 8;
 
         std::vector<unsigned int> res(workGroupSize, 0);
 
-        while (as.size() % workGroupSize > 0) // дополняем до кратности размера рабочей группы
+        while (as.size() % (workGroupSize * k) > 0) // дополняем до кратности размера рабочей группы
             as.push_back(0);
 
+        unsigned int global_work_size = as.size(); // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
 
         // создаем буфферы на устройстве
         gpu::gpu_mem_32u as_gpu, res_gpu;
@@ -98,7 +99,7 @@ int main(int argc, char **argv)
             
             // исполняем kernel
             sum.exec(gpu::WorkSize(workGroupSize, global_work_size),
-                     as_gpu, res_gpu);
+                     as_gpu, res_gpu, k);
             t.nextLap();
         }
         
