@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     int benchmarkingIters = 10;
 
     unsigned int reference_sum = 0;
-    unsigned int n = 100 * 1000 * 1000;
+    unsigned int n = 100 * 1000 * 1000; // 100 * 1000 * 1000;
     std::vector<unsigned int> as(n, 0);
     FastRandom r(42);
     for (int i = 0; i < n; ++i) {
@@ -75,12 +75,13 @@ int main(int argc, char **argv)
         sum.compile();
 
         unsigned int workGroupSize = 256;
-        unsigned int global_work_size = 1; // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
+        unsigned int global_work_size = as.size(); // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
 
-        std::vector<unsigned int> res(workGroupSize, 0);  // сумма для каждого потока
+        std::vector<unsigned int> res(workGroupSize, 0);
 
         while (as.size() % workGroupSize > 0) // дополняем до кратности размера рабочей группы
             as.push_back(0);
+
 
         // создаем буфферы на устройстве
         gpu::gpu_mem_32u as_gpu, res_gpu;
@@ -95,10 +96,9 @@ int main(int argc, char **argv)
             // очищаем res_gpu
             res_gpu.writeN(res.data(), workGroupSize);
             
-            unsigned int size = (unsigned int) as.size();
             // исполняем kernel
             sum.exec(gpu::WorkSize(workGroupSize, global_work_size),
-                     as_gpu, res_gpu, size / workGroupSize);
+                     as_gpu, res_gpu);
             t.nextLap();
         }
         
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
         res_gpu.readN(res.data(), workGroupSize);
         
         unsigned int res_sum = 0; // итоговая сумма
-        for(int i=0; i < workGroupSize; i++) // проходим по частичным суммам, собраных потоками
+        for(int i=0; i < workGroupSize; i++) // проходим по частичным суммам
             res_sum += res[i];
 
         // Проверяем корректность результатов
