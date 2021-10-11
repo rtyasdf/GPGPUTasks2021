@@ -32,9 +32,9 @@ __kernel void matrix_multiplication(__global float* a, __global float* b, __glob
             accumulator += bCache[index] * aCache[multOffset + j];
             index += localSizeX;
         }
-        
         aOffset += localSizeX;
         bOffset += localSizeY;
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     c[globalY * get_global_size(0) + globalX] = accumulator;
