@@ -18,17 +18,20 @@ __kernel void sum(__global const unsigned int* a,
     buffer[local_index] = a[get_global_id(0)];
     
     barrier(CLK_LOCAL_MEM_FENCE);
+
     if (local_index < SUBGROUP_SIZE){
         for(int i=local_index; i < size; i += SUBGROUP_SIZE)
             accumulator += buffer[i];
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
+
     buffer[local_index] = accumulator;    
     
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
     if (local_index == 0){
-        accumulator = 0;
-        for(int i=0; i < SUBGROUP_SIZE; i++)
+        for(int i=1; i < SUBGROUP_SIZE; i++)
             accumulator += buffer[i];
         atomic_add(res, accumulator);
     }
