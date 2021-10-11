@@ -4,19 +4,32 @@
 
 #line 6
 
+#define WORKGROUP_SIZE 128
+#define SUBGROUP_SIZE 16
+
 __kernel void sum(__global const unsigned int* a,
-                  __global unsigned int* res,
-                  unsigned int k)
+                  __global unsigned int* res)
 {
     const unsigned int local_index = get_local_id(0);
     const unsigned int size = get_local_size(0);
-    unsigned int index = (get_global_id(0) / size) * size * k + local_index;
     unsigned int accumulator = 0;
     
-    for(int i=0; i<k; i++){
-        accumulator += a[index];
-        index += size;
-    }
+    __local unsigned int buffer[WORKGROUP_SIZE];
+    buffer[local_index] = a[get_global_id(0)];
     
-    atomic_add(&res[local_index], accumulator);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (local_index < SUBGROUP_SIZE){
+        for(int i=local_index; i < size; i += SUBGROUP_SIZE)
+            accumulator += buffer[i];
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+    buffer[local_index] = accumulator;    
+    
+    if (local_index == 0){
+        accumulator = 0;
+        for(int i=0; i < SUBGROUP_SIZE; i++)
+            accumulator += buffer[i];
+        atomic_add(res, accumulator);
+    }
 }

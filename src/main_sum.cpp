@@ -74,20 +74,19 @@ int main(int argc, char **argv)
         ocl::Kernel sum(sum_kernel, sum_kernel_length, "sum");
         sum.compile();
 
-        unsigned int workGroupSize = 256;
-        unsigned int k = 8;
+        unsigned int workGroupSize = 128;
 
-        std::vector<unsigned int> res(workGroupSize, 0);
-
-        while (as.size() % (workGroupSize * k) > 0) // дополняем до кратности размера рабочей группы
+        std::vector<unsigned int> res(1, 0);
+        
+        while (as.size() % workGroupSize > 0) // дополняем до кратности размера рабочей группы
             as.push_back(0);
 
-        unsigned int global_work_size = as.size(); // (n + workGroupSize - 1) / workGroupSize * workGroupSize;
+        unsigned int global_work_size = as.size();
 
         // создаем буфферы на устройстве
         gpu::gpu_mem_32u as_gpu, res_gpu;
         as_gpu.resizeN(as.size());
-        res_gpu.resizeN(workGroupSize);
+        res_gpu.resizeN(1);
         
         as_gpu.writeN(as.data(), as.size());
 
@@ -95,11 +94,11 @@ int main(int argc, char **argv)
         for (int iter = 0; iter < benchmarkingIters; ++iter) {
             
             // очищаем res_gpu
-            res_gpu.writeN(res.data(), workGroupSize);
+            res_gpu.writeN(res.data(), 1);
             
             // исполняем kernel
             sum.exec(gpu::WorkSize(workGroupSize, global_work_size),
-                     as_gpu, res_gpu, k);
+                     as_gpu, res_gpu);
             t.nextLap();
         }
         
@@ -121,14 +120,10 @@ int main(int argc, char **argv)
         std::cout << deviceString + ":     " << (n/1000.0/1000.0) / t.lapAvg() << " millions/s" << std::endl; 
 
         // считываем в память host'а
-        res_gpu.readN(res.data(), workGroupSize);
+        res_gpu.readN(res.data(), 1);
         
-        unsigned int res_sum = 0; // итоговая сумма
-        for(int i=0; i < workGroupSize; i++) // проходим по частичным суммам
-            res_sum += res[i];
-
         // Проверяем корректность результатов
-        EXPECT_THE_SAME(reference_sum, res_sum, "GPU results should be equal to CPU results!");
+        EXPECT_THE_SAME(reference_sum, res[0], "GPU results should be equal to CPU results!");
     }
 
     return 0;
