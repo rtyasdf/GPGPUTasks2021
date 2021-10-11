@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     unsigned int M = 1024;
     unsigned int K = 1024;
     unsigned int N = 1024;
-    const size_t gflops = ((size_t) M * K * N * 2) / (1000 * 1000 * 1000); // умножить на два, т.к. операция сложения и умножения
+    const float gflops = ((size_t) M * K * N * 2) / (1000.0 * 1000 * 1000); // умножить на два, т.к. операция сложения и умножения
 
     std::vector<float> as(M*K, 0);
     std::vector<float> bs(K*N, 0);
@@ -58,7 +58,6 @@ int main(int argc, char **argv)
 
     const std::vector<float> cs_cpu_reference = cs;
 
-    /*
     gpu::gpu_mem_32f as_gpu, bs_gpu, cs_gpu;
     as_gpu.resizeN(M*K);
     bs_gpu.resizeN(K*N);
@@ -74,9 +73,13 @@ int main(int argc, char **argv)
         timer t;
         for (int iter = 0; iter < benchmarkingIters; ++iter) {
             // TODO
-            unsigned int work_group_size = 128;
-            unsigned int global_work_size = ...;
-            matrix_multiplication_kernel.exec(gpu::WorkSize(work_group_size, global_work_size), as_gpu, bs_gpu, cs_gpu, M, K, N);
+            unsigned int work_group_size_x = 16;
+            unsigned int work_group_size_y = 16;
+
+            unsigned int global_work_size_x = M;
+            unsigned int global_work_size_y = N;
+
+            matrix_multiplication_kernel.exec(gpu::WorkSize(work_group_size_x, work_group_size_y, global_work_size_x, global_work_size_y), as_gpu, bs_gpu, cs_gpu, M, K, N);
 
             t.nextLap();
         }
@@ -85,7 +88,6 @@ int main(int argc, char **argv)
     }
 
     cs_gpu.readN(cs.data(), M*N);
-    */
 
     // Проверяем корректность результатов
     double diff_sum = 0;
