@@ -22,7 +22,7 @@ __kernel void matrix_multiplication(__global float* a, __global float* b, __glob
     while(aOffset < K){
 
         aCache[cacheIndex] = a[globalY * K + aOffset + localX];
-        //barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         bCache[cacheIndex] = b[(localY + bOffset) * N + globalX];
         barrier(CLK_LOCAL_MEM_FENCE);
