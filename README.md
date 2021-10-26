@@ -1,16 +1,24 @@
-В этом репозитории предложены задания для [курса по вычислениям на видеокартах в CSC](https://compscicenter.ru/courses/video_cards_computation/2021-autumn/).
+=======
+# Задание 5. Bitonic sort, radix sort
 
-Задания:
+[![Build Status](https://github.com/GPGPUCourse/GPGPUTasks2021/actions/workflows/cmake.yml/badge.svg?branch=task05&event=push)](https://github.com/GPGPUCourse/GPGPUTasks2021/actions/workflows/cmake.yml)
 
-- [Задание 0](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task00): Вводное.
-- [Задание 1](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task01): A+B.
-- [Задание 2](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task02): Теоретическое задание: параллелизуемость/code divergence/memory coalesced access (сдача через сайт CSC).
-- [Задание 3](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task03): Фрактал Мандельброта. Сумма чисел. Максимальный по сумме префикс.
-- [Задание 4](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task04): Транспонирование матрицы, умножение матриц.
-- [Задание 42](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task42): Система непересекающихся множеств и барьеры (необязательное, теоретическое).
-- [Задание 5](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task05): Bitonic sort, radix sort.
-- [Задание 6](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/task06): Merge sort.
+0. Сделать fork проекта
+1. Выполнить задания 5.1 и 5.2
+2. Отправить **Pull-request** с названием ```Task05 <Имя> <Фамилия> <Аффиляция>``` (указав вывод каждой программы при исполнении на вашем компьютере - в тройных кавычках для сохранения форматирования)
 
-А так же:
+**Дедлайн**: начало лекции 25 октября.
 
- - [OpenCL <-> CUDA](https://github.com/GPGPUCourse/GPGPUTasks2021/tree/cuda): Пример как написать кернел на OpenCL, а запускать его в т.ч. через CUDA и т.о. получить доступ к профилировщику и cuda-memcheck.
+Задание 5.1. Bitonic sort
+=========
+
+Реализуйте bitonic sort для вещественных чисел (используя локальную память, пока размер подмассива для сортировки не станет слишком большим).
+
+Файлы: ```src/main_bitonic.cpp``` и ```src/cl/bitonic.cl```
+
+Задание 5.2. Radix sort
+=========
+
+Реализуйте radix sort для unsigned int (используя локальную память).
+
+Файлы: ```src/main_radix.cpp``` и ```src/cl/radix.cl```
