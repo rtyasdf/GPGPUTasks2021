@@ -1,4 +1,3 @@
-=======
 # Задание 5. Bitonic sort, radix sort
 
 [![Build Status](https://github.com/GPGPUCourse/GPGPUTasks2021/actions/workflows/cmake.yml/badge.svg?branch=task05&event=push)](https://github.com/GPGPUCourse/GPGPUTasks2021/actions/workflows/cmake.yml)
