@@ -29,12 +29,12 @@ int main(int argc, char **argv) {
     context.init(device.device_id_opencl);
     context.activate();
 
-    int benchmarkingIters = 10; // 10
-    unsigned int n = 32 * 1024 * 1024; // 32 * 1024 * 1024
+    int benchmarkingIters = 10;
+    unsigned int n = 32 * 1024 * 1024;
     std::vector<unsigned int> as(n, 0);
     FastRandom r(n);
     for (unsigned int i = 0; i < n; ++i) {
-        as[i] = (unsigned int) r.next(0, std::numeric_limits<int>::max()); //(((i & 3) << 1) + 1) & 3;
+        as[i] = (unsigned int) r.next(0, std::numeric_limits<int>::max());
     }
     std::cout << "Data generated for n=" << n << "!" << std::endl;
 
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
         timer t;
         for (int iter = 0; iter < benchmarkingIters; ++iter) {
             cpu_sorted = as;
-            //std::sort(cpu_sorted.begin(), cpu_sorted.end());
+            std::sort(cpu_sorted.begin(), cpu_sorted.end());
             t.nextLap();
         }
         std::cout << "CPU: " << t.lapAvg() << "+-" << t.lapStd() << " s" << std::endl;
@@ -95,8 +95,6 @@ int main(int argc, char **argv) {
         count_down.compile();
         reorder.compile();
 
-        std::cout << "All Kernels are compiled!" << std::endl;
-
         std::vector<unsigned int> zeros(n / 32, 0);
         timer t;
 
@@ -134,38 +132,16 @@ int main(int argc, char **argv) {
                 reorder.exec(gpu::WorkSize(256, n), data[f], data[s], count[0], (n - 1) / 128 + 1, i); 
             }
             t.nextLap();
-            std::cout << "Iteration " << iter << std::endl; 
         }
         std::cout << "GPU: " << t.lapAvg() << "+-" << t.lapStd() << " s" << std::endl;
         std::cout << "GPU: " << (n / 1000.0 / 1000) / t.lapAvg() << " millions/s" << std::endl;
-        std::cout << "Local count: " << q.lapAvg() << "+-" << q.lapStd() << " s" << std::endl;
         data[0].readN(as.data(), n);
     }
 
     // Проверяем корректность результатов
-    //for (int i = 0; i < n; ++i) {
-    //    EXPECT_THE_SAME(as[i], cpu_sorted[i], "GPU results should be equal to CPU results!");
-    //}
-
-    std::cout << "Check result:";
-    for(int i=1; i<=n; i++){
-        if (i == n){
-           std::cout << "\033[32m Passed\033[0m" << std::endl;
-           break;
-        }
-        if (as[i] < as[i - 1]){
-            std::cout << "\033[31m Error on index " << i << "\033[0m" << std::endl;
-            break;
-        }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_THE_SAME(as[i], cpu_sorted[i], "GPU results should be equal to CPU results!");
     }
-
-    std::cout << "First 10 elements of as " << std::endl;
-    for(int i=0; i < 10; i++)
-        std::cout << i << " : " << as[i] << std::endl;
-
-    std::cout << "Last 10 elements of as " << std::endl;
-    for(int i=0; i < 10; i++)
-        std::cout << n - 11 + i << " : " << as[n - 11 + i] << std::endl;
 
     return 0;
 }
