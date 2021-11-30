@@ -7,31 +7,28 @@ uint j_index(uint index){
 __kernel void count_local(__global uint *as, __global uint *count_out, uint power, uint k){
 
    // 1. Считываем из глобальной памяти в локальную, ставим метку разряда 
-   __local uint buf[16][16];
+   __local uint buf[256];
    uint loc = get_local_id(0);
    uint elem = as[get_global_id(0)];
-   buf[loc & 15][j_index(loc)] = 1 << (((elem >> power) & 3) << 3);
+   buf[loc] = 1 << (((elem >> power) & 3) << 3);
    barrier(CLK_LOCAL_MEM_FENCE);
-   
-   // 2. Scan: Up-phase
-   for(int i = 2; i < 256; i <<= 1){
-        if (((loc + 1) & (i - 1)) == 0){
-            uint other_index = loc - (i >> 1);
-            uint other_elem = buf[other_index & 15][j_index(other_index)];
-            buf[loc & 15][j_index(loc)] += other_elem;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
+
+   // 2. Sum
+   uint offset = 0;
+   for(int i = 6; i >= 0; i -= 1){
+       offset += 1 << i;
+       if ((loc & 127) >= offset)
+           buf[loc] += buf[loc - (1 << i)];
+       barrier(CLK_LOCAL_MEM_FENCE);
    }
-    
+
    // 3. Записываем счетчик в глобальную память
     if (loc < 4){
         uint pos = loc << 3;
+        uint out_index = k * loc + (get_global_id(0) >> 7);
 
-        uint m = 127;
-        count_out[k * loc + (get_global_id(0) >> 7) ] = (buf[m & 15][j_index(m)] >> pos ) & 127;
-
-        m = 255;
-        count_out[k * loc + (get_global_id(0) >> 7) + 1] = (buf[m & 15][j_index(m)] >> pos ) & 127;
+        count_out[out_index] = (buf[127] >> pos) & 127;
+        count_out[out_index + 1] = (buf[255] >> pos) & 127;
     }
 }
 

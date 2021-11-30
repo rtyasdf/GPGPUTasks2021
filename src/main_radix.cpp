@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 
                 // Считаем по рабочей группе, сколько в ней каких разрядов 
                 count_local.exec(gpu::WorkSize(workGroupSize, global_work_size), data[f], count[0], i, (n - 1) / 128 + 1);
-            
+
                 // Проходим вверх, считая локальные префиксы
                 for(int j=1; j <= count.size(); j++)
                     count_up.exec(gpu::WorkSize(256, csize[j-1]), count[j-1], count[j % count.size()], j == count.size() ? 1 : 0);
